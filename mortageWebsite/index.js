@@ -98,14 +98,32 @@ async function getPersonInfo(number, property) {
         return error;
     }
 }
+function getDocumentCount(personNumber, personProperty, res) {
+    Person.countDocuments({}, (error, documentCount) => {
+        console.log("Error", error);
+        console.log("Document count", documentCount);
+        if (error) {
+            res.status(404).send(error.message);
+        }
+        else if (documentCount < personNumber)
+        {
+            res.status(400).send("The person number was greater than the number of objects.");
+        }
+        else {
+            console.log(documentCount);
+            getPersonInfo(personNumber, personProperty)
+                .then(value => res.send(value))
+                .catch(err => res.status(404).send(new Error(err)));
+        }
+    })
+}
 
 //Getting information about name
 app.get(`/people/:number/:property`, (req, res) => {
+    console.log("This is called.")
     let personNumber = parseInt(req.params.number);
     let personProperty = req.params.property;
-    getPersonInfo(personNumber, personProperty)
-        .then(value => res.send(value))
-        .catch(err => res.send(new Error(err)));
+    getDocumentCount(personNumber, personProperty, res);
 });
 
 //Update
