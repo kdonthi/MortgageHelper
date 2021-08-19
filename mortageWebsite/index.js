@@ -39,8 +39,23 @@ const personSchema = mongoose.Schema({
     tags: [ String ]
 });
 
-const Person = mongoose.model("Person", personSchema, 'HousingInformation');
+personSchema.index({
+    id: 1,
+    balance: 1,
+    credit: 1,
+    picture: 1,
+    name_first: 1,
+    name_last: 1,
+    employer: 1,
+    email: 1,
+    phone: 1,
+    address: 1,
+    comments: 1,
+    created: 1,
+    tags: 1}, {unique: true});
 
+const Person = mongoose.model("Person", personSchema, 'HousingInformation');
+//Person.deleteMany({name_first: "kaushik"}).then(() => console.log("All of Kaushik was deleted"));
 const personSchemaValidation = Joi.object({
     id: Joi.string().required(),
     balance: Joi.string().required(),
@@ -59,14 +74,16 @@ const personSchemaValidation = Joi.object({
 
 //Create
 app.post(`/people`, (req, res) => {
+    console.log("In the post method.");
     let result = personSchemaValidation.validate(req.body);
     if (result.error) {
         res.send(result.error);
-        return;
     }
     else {
         let newPerson = new Person(req.body);
-        newPerson.save();
+        newPerson.save()
+            .then(_ => res.send(newPerson))
+            .catch(err => res.status(400).send("Duplicate person sent"));
     }
 });
 
@@ -100,10 +117,8 @@ async function getPersonInfo(number, property) {
 }
 function getDocumentCount(personNumber, personProperty, res) {
     Person.countDocuments({}, (error, documentCount) => {
-        console.log("Error", error);
-        console.log("Document count", documentCount);
         if (error) {
-            res.status(404).send(error.message);
+            res.status(404).send(error);
         }
         else if (documentCount < personNumber)
         {
@@ -147,8 +162,8 @@ app.put(`/`, (req, res) => {
 async function deletePerson(id) {
     return await Person.findOneAndDelete({_id: id});
 }
-app.delete(`/`, (req, res) => {
-    let id = req.params.id;
-    let deletedPerson = deletePerson(id);
-    res.send(deletedPerson);
+app.delete(`/people/:id`, (req, res) => {
+    let id = mongoose.Types.ObjectId(req.params.id);
+    deletePerson(id).then(deletedPerson => res.send(deletedPerson))
+        .catch(err => res.status(400).send(err.message));
 })
