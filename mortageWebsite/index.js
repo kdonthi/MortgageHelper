@@ -118,14 +118,17 @@ app.put(`localhost:${port}/`, (req, res) => {
     else {
         let id = req.body.id;
         console.log(req.body);
-        let updatedPerson = Person.findByIdAndUpdate(id, (person) => {
-        }, {new: true});
-        res.send(updatedPerson);
+        let updatedPerson = Person
+            .findByIdAndUpdate(id, (person) => {
+                }, {new: true})
+            .then(updatedPerson => res.send(updatedPerson));
     }
 })
-
+async function deletePerson(id) {
+    return await Person.findOneAndDelete({_id: id});
+}
 app.delete(`localhost:${port}/`, (req, res) => {
     let id = req.params.id;
-    let deletedPerson = Person.deleteOne({_id: id});
+    let deletedPerson = deletePerson(id);
     res.send(deletedPerson);
 })
