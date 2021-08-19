@@ -141,8 +141,23 @@ app.get(`/people/:number/:property`, (req, res) => {
     getDocumentCount(personNumber, personProperty, res);
 });
 
+const updateSchema = Joi.object({
+    id: Joi.string(),
+    balance: Joi.string(),
+    credit: Joi.number(),
+    picture: Joi.string(),
+    name_first: Joi.string(),
+    name_last: Joi.string(),
+    employer: Joi.string(),
+    email: Joi.string(),
+    phone: Joi.number(),
+    address: Joi.string(),
+    comments: Joi.string(),
+    created: Joi.date(),
+    tags: Joi.array().items(Joi.string())
+});
 //Update
-app.put(`/`, (req, res) => {
+app.put(`/people/:id`, (req, res) => {
     let args = req.body;
     let validationResult = updateSchema.validate(args);
     if (validationResult.error) {
@@ -150,20 +165,21 @@ app.put(`/`, (req, res) => {
         return;
     }
     else {
-        let id = req.body.id;
-        console.log(req.body);
+        let id = req.params.id;
+        console.log(args);
         Person
-            .findByIdAndUpdate(id, (person) => {
-                }, {new: true})
+            .findByIdAndUpdate(id, {
+                $set: args
+            }, {new: true})
             .then(updatedPerson => res.send(updatedPerson));
     }
 });
 
 async function deletePerson(id) {
-    return await Person.findOneAndDelete({_id: id});
+    return await Person.findByIdAndDelete(id);
 }
 app.delete(`/people/:id`, (req, res) => {
-    let id = mongoose.Types.ObjectId(req.params.id);
+    let id = req.params.id;
     deletePerson(id).then(deletedPerson => res.send(deletedPerson))
         .catch(err => res.status(400).send(err.message));
 })
