@@ -37,7 +37,7 @@ const personSchema = mongoose.Schema({
 
 const Person = mongoose.model("Person", personSchema, 'HousingInformation');
 
-const personSchema = mongoose.Schema({
+const personSchemaValidation = Joi.object({
     id: Joi.string().required(),
     balance: Joi.string().required(),
     credit: Joi.number().required(),
@@ -50,13 +50,22 @@ const personSchema = mongoose.Schema({
     address: Joi.string().required(),
     comments: Joi.string().required(),
     created: Joi.date().required(),
-    tags: Joi.array().items(Joi.string())
+    tags: Joi.array().items(Joi.string()).required()
 });
 
 //Create
 app.post(`localhost:${port}/people`, (req, res) => {
-
+    let result = personSchemaValidation.validate(req.body);
+    if (result.error) {
+        res.send(result.error);
+        return;
+    }
+    else {
+        let newPerson = Person(req.body);
+        newPerson.save();
+    }
 });
+
 //Read
 async function getPeople() {
     return await Person.find({});
@@ -81,3 +90,42 @@ app.get(`localhost:${port}/:number/:property`, (req, res) => {
     res.send(getPersonInfo(number, property))
 });
 
+//Update
+
+let updateSchema = Joi.object({
+    id: Joi.string().required(),
+    balance: Joi.string(),
+    credit: Joi.number(),
+    picture: Joi.string(),
+    name_first: Joi.string(),
+    name_last: Joi.string(),
+    employer: Joi.string(),
+    email: Joi.string(),
+    phone: Joi.number(),
+    address: Joi.string(),
+    comments: Joi.string(),
+    created: Joi.date(),
+    tags: Joi.array().items(Joi.string())
+});
+
+app.put(`localhost:${port}/`, (req, res) => {
+    let args = req.body;
+    let validationResult = updateSchema.validate(args);
+    if (validationResult.error) {
+        res.send(validationResult.error);
+        return;
+    }
+    else {
+        let id = req.body.id;
+        console.log(req.body);
+        let updatedPerson = Person.findByIdAndUpdate(id, (person) => {
+        }, {new: true});
+        res.send(updatedPerson);
+    }
+})
+
+app.delete(`localhost:${port}/`, (req, res) => {
+    let id = req.params.id;
+    let deletedPerson = Person.deleteOne({_id: id});
+    res.send(deletedPerson);
+})
