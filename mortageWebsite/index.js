@@ -1,7 +1,9 @@
 //Getting express
 const express = require("express");
 const app = express();
+const port = process.env.PORT || 3000;
 app.use(express.json());
+app.listen(port, () => console.log(`Listening to port ${port}`));
 
 //Getting mongoose
 const mongoose = require("mongoose");
@@ -9,14 +11,16 @@ const mongoose = require("mongoose");
 //Getting Joi
 const Joi = require("joi");
 
-//Setting port
-const port = process.env.PORT ?? 5000;
-
 //Connecting to db
 async function connectToDatabase() {
-    await mongoose.connect(`mongodb://localhost:${port}/Landis`);
+    try {
+        await mongoose.connect(`mongodb://localhost/Landis`);
+    }
+    catch (error) {
+        console.log(error);
+    }
 }
-connectToDatabase().then(() => "Database connected.");
+connectToDatabase();
 
 //Creating schema and model for schema
 const personSchema = mongoose.Schema({
@@ -54,14 +58,14 @@ const personSchemaValidation = Joi.object({
 });
 
 //Create
-app.post(`localhost:${port}/people`, (req, res) => {
+app.post(`/people`, (req, res) => {
     let result = personSchemaValidation.validate(req.body);
     if (result.error) {
         res.send(result.error);
         return;
     }
     else {
-        let newPerson = Person(req.body);
+        let newPerson = new Person(req.body);
         newPerson.save();
     }
 });
@@ -70,45 +74,42 @@ app.post(`localhost:${port}/people`, (req, res) => {
 async function getPeople() {
     return await Person.find({});
 }
-app.get(`localhost:${port}/people`, (_, res) => {
-    res.send(JSON.stringify(getPeople()));
+app.get(`/people`, (_, res) => {
+    getPeople()
+        .then(people => {
+            console.log(people);
+            let output = people.map(person => JSON.stringify(person)).join("\n");
+            res.send(people);
+        });
 });
 
 async function getPersonInfo(number, property) {
-    return await Person
-        .find({})
-        .skip(number - 1)
-        .limit(1)
-        .select(`${property}`);
+    try {
+        console.log("here 1");
+        return await Person
+            .find({})
+            .skip(number - 1)
+            .limit(1)
+            .select(`${property}`);
+    }
+    catch (error) {
+        console.log("here 2");
+        console.log("Error", error);
+        return error;
+    }
 }
 
 //Getting information about name
-app.get(`localhost:${port}/:number/:property`, (req, res) => {
-    console.log(req.params);
-    let number = parseInt(req.params.number);
-    let property = req.params.value;
-    res.send(getPersonInfo(number, property))
+app.get(`/people/:number/:property`, (req, res) => {
+    let personNumber = parseInt(req.params.number);
+    let personProperty = req.params.property;
+    getPersonInfo(personNumber, personProperty)
+        .then(value => res.send(value))
+        .catch(err => res.send(new Error(err)));
 });
 
 //Update
-
-let updateSchema = Joi.object({
-    id: Joi.string().required(),
-    balance: Joi.string(),
-    credit: Joi.number(),
-    picture: Joi.string(),
-    name_first: Joi.string(),
-    name_last: Joi.string(),
-    employer: Joi.string(),
-    email: Joi.string(),
-    phone: Joi.number(),
-    address: Joi.string(),
-    comments: Joi.string(),
-    created: Joi.date(),
-    tags: Joi.array().items(Joi.string())
-});
-
-app.put(`localhost:${port}/`, (req, res) => {
+app.put(`/`, (req, res) => {
     let args = req.body;
     let validationResult = updateSchema.validate(args);
     if (validationResult.error) {
@@ -118,16 +119,17 @@ app.put(`localhost:${port}/`, (req, res) => {
     else {
         let id = req.body.id;
         console.log(req.body);
-        let updatedPerson = Person
+        Person
             .findByIdAndUpdate(id, (person) => {
                 }, {new: true})
             .then(updatedPerson => res.send(updatedPerson));
     }
-})
+});
+
 async function deletePerson(id) {
     return await Person.findOneAndDelete({_id: id});
 }
-app.delete(`localhost:${port}/`, (req, res) => {
+app.delete(`/`, (req, res) => {
     let id = req.params.id;
     let deletedPerson = deletePerson(id);
     res.send(deletedPerson);
