@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Landis Customer Information</title>
+        <style>
+            body {
+                background-color: tan;
+                font-family: "SansSerif";
+                height: 100%;
+                width: 100%;
+            }
+            .intro {
+                text-align: center;
+            }
+            p {
+                font-size: 20px;
+            }
+            div {
+                display: inline-block;
+            }
+            .outerdiv {
+                position: relative;
+                background-color: cornflowerblue;
+                height: 300px;
+                width: 200px;
+                left: 100px;
+                top: 100px;
+            }
+            .innerdiv {
+                position: absolute;
+                background-color: blue;
+                height: 150px;
+                width: 150px;
+                left: 400px;
+                display: block;
+            }
+
+        </style>
+    </head>
+    <body>
+        <h1 class="intro"><i>Landis's Valued Customers</i></h1>
+        <p class="intro">Here at Landis, we believe that everyone should have the right to own property and pursue their American Dream.
+            <br><br>
+            That's why our world-class engineers strive to create tools to help people, no matter their financial status, to achieve it. Here are a few of our happy customers.
+        </p>
+        <div id="tileContainer">
+
+        </div>
+
+        <script type="text/javascript">
+            async function getPeopleCount() {
+                return await fetch("http://localhost:3000/people/count", {method: "GET"});
+            }
+
+            function getTile(number) {
+                let divElement = document.createElement("div");
+                divElement.style.width = "200px";
+                divElement.style.height = "300px";
+                divElement.id = "person" + number;
+                divElement.style.margin = "30px 10px 30px 10px";
+                divElement.setAttribute("position", "relative");
+                divElement.style.backgroundColor = "aquamarine";
+                return divElement;
+            }
+
+            function addTiles() {
+                getPeopleCount()
+                    .then(people => {return people.json();})
+                    .then(count => {
+                        alert("HEre")
+                        let intCount = parseInt(JSON.stringify(count));
+                        alert(intCount);
+                        let tileContainer = document.getElementById("tileContainer");
+                        for (let i = 1; i <= intCount; i++) {
+                            let divElement = getTile(i);
+                            tileContainer.appendChild(divElement);
+                        }
+                        alert("Tiles finished adding.");
+                    })
+                    .catch(error => res.status(404).send(error.message));
+            }
+            addTiles();
+        </script>
+    </body>
+
+</html>
