@@ -22,7 +22,7 @@ async function connectToDatabase() {
 }
 connectToDatabase();
 
-//Creating schema and model for schema
+//Creating schema
 const personSchema = mongoose.Schema({
     id: String,
     balance: String,
@@ -39,6 +39,7 @@ const personSchema = mongoose.Schema({
     tags: [ String ]
 });
 
+//Preventing dups
 personSchema.index({
     id: 1,
     balance: 1,
@@ -52,30 +53,35 @@ personSchema.index({
     address: 1,
     comments: 1,
     created: 1,
-    tags: 1}, {unique: true});
+    tags: 1}, {unique: true}
+);
 
+//Creating model
 const Person = mongoose.model("Person", personSchema, 'HousingInformation');
-//Person.deleteMany({name_first: "kaushik"}).then(() => console.log("All of Kaushik was deleted"));
-const personSchemaValidation = Joi.object({
-    id: Joi.string().required(),
-    balance: Joi.string().required(),
-    credit: Joi.number().required(),
-    picture: Joi.string().required(),
-    name_first: Joi.string().required(),
-    name_last: Joi.string().required(),
-    employer: Joi.string().required(),
-    email: Joi.string().required(),
-    phone: Joi.number().required(),
-    address: Joi.string().required(),
-    comments: Joi.string().required(),
-    created: Joi.date().required(),
-    tags: Joi.array().items(Joi.string()).required()
-});
 
+function validateSchema(schema) {
+    const personSchemaValidation = Joi.object({
+        id: Joi.string().required(),
+        balance: Joi.string().required(),
+        credit: Joi.number().required(),
+        picture: Joi.string().required(),
+        name_first: Joi.string().required(),
+        name_last: Joi.string().required(),
+        employer: Joi.string().required(),
+        email: Joi.string().required(),
+        phone: Joi.number().required(),
+        address: Joi.string().required(),
+        comments: Joi.string().required(),
+        created: Joi.date().required(),
+        tags: Joi.array().items(Joi.string()).required()
+    });
+
+    return personSchemaValidation.validate(schema);
+}
 //Create
 app.post(`/people`, (req, res) => {
     console.log("In the post method.");
-    let result = personSchemaValidation.validate(req.body);
+    let result = validateSchema(req.body);
     if (result.error) {
         res.send(result.error);
     }
@@ -96,13 +102,17 @@ app.get(`/people`, (_, res) => {
         .then(people => {
             console.log(people);
             let output = people.map(person => JSON.stringify(person)).join("\n");
-            res.send(people);
+            res.send(output);
         });
 });
+app.get("/people/count", (req, res) => {
+    let count = Person.find({})
+        .count();
+    res.send(count);
+})
 
 async function getPersonInfo(number, property) {
     try {
-        console.log("here 1");
         return await Person
             .find({})
             .skip(number - 1)
@@ -110,12 +120,10 @@ async function getPersonInfo(number, property) {
             .select(`${property}`);
     }
     catch (error) {
-        console.log("here 2");
-        console.log("Error", error);
         return error;
     }
 }
-function getDocumentCount(personNumber, personProperty, res) {
+function getPersonProperty(personNumber, personProperty, res) {
     Person.countDocuments({}, (error, documentCount) => {
         if (error) {
             res.status(404).send(error);
@@ -125,10 +133,9 @@ function getDocumentCount(personNumber, personProperty, res) {
             res.status(400).send("The person number was greater than the number of objects.");
         }
         else {
-            console.log(documentCount);
             getPersonInfo(personNumber, personProperty)
                 .then(value => res.send(value))
-                .catch(err => res.status(404).send(new Error(err)));
+                .catch(err => res.status(404).send(err));
         }
     })
 }
@@ -138,38 +145,42 @@ app.get(`/people/:number/:property`, (req, res) => {
     console.log("This is called.")
     let personNumber = parseInt(req.params.number);
     let personProperty = req.params.property;
-    getDocumentCount(personNumber, personProperty, res);
+    getPersonProperty(personNumber, personProperty, res);
 });
 
-const updateSchema = Joi.object({
-    id: Joi.string(),
-    balance: Joi.string(),
-    credit: Joi.number(),
-    picture: Joi.string(),
-    name_first: Joi.string(),
-    name_last: Joi.string(),
-    employer: Joi.string(),
-    email: Joi.string(),
-    phone: Joi.number(),
-    address: Joi.string(),
-    comments: Joi.string(),
-    created: Joi.date(),
-    tags: Joi.array().items(Joi.string())
-});
+function validateUpdateSchema(schema) {
+    const updateSchema = Joi.object({
+        id: Joi.string(),
+        balance: Joi.string(),
+        credit: Joi.number(),
+        picture: Joi.string(),
+        name_first: Joi.string(),
+        name_last: Joi.string(),
+        employer: Joi.string(),
+        email: Joi.string(),
+        phone: Joi.number(),
+        address: Joi.string(),
+        comments: Joi.string(),
+        created: Joi.date(),
+        tags: Joi.array().items(Joi.string())
+    });
+
+    return updateSchema.validate(schema);
+}
+
 //Update
 app.put(`/people/:id`, (req, res) => {
-    let args = req.body;
-    let validationResult = updateSchema.validate(args);
-    if (validationResult.error) {
-        res.send(validationResult.error);
-        return;
+    let updateRequest = req.body;
+    let { error } = validateUpdateSchema(updateRequest);
+    if (error) {
+        res.send(error);
     }
     else {
         let id = req.params.id;
         console.log(args);
         Person
             .findByIdAndUpdate(id, {
-                $set: args
+                $set: updateRequest
             }, {new: true})
             .then(updatedPerson => res.send(updatedPerson));
     }
@@ -180,6 +191,10 @@ async function deletePerson(id) {
 }
 app.delete(`/people/:id`, (req, res) => {
     let id = req.params.id;
-    deletePerson(id).then(deletedPerson => res.send(deletedPerson))
-        .catch(err => res.status(400).send(err.message));
+    deletePerson(id)
+        .then(deletedPerson => res.send(deletedPerson))
+        .catch(err => res.status(400).send(err));
 })
+
+module.exports.Person = Person;
+module.exports.port = port;
