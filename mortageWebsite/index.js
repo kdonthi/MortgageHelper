@@ -11,16 +11,10 @@ const mongoose = require("mongoose");
 //Getting Joi
 const Joi = require("joi");
 
+//Getting path
+const path = require("path");
 //Connecting to db
-async function connectToDatabase() {
-    try {
-        await mongoose.connect(`mongodb://localhost/Landis`);
-    }
-    catch (error) {
-        console.log(error);
-    }
-}
-connectToDatabase();
+mongoose.connect(`mongodb://localhost/Landis`).then(_ => console.log("Connected to database."));
 
 //Creating schema
 const personSchema = mongoose.Schema({
@@ -105,10 +99,19 @@ app.get(`/people`, (_, res) => {
             res.send(output);
         });
 });
+
+function getPeopleCount(res) {
+    Person.countDocuments({}, (error, documentCount) => {
+        if (error) {
+            res.status(404).send(error);
+        }
+        else {
+            res.send(documentCount.toString());
+        }
+    })
+}
 app.get("/people/count", (req, res) => {
-    let count = Person.find({})
-        .count();
-    res.send(count);
+    getPeopleCount(res);
 })
 
 async function getPersonInfo(number, property) {
@@ -198,3 +201,8 @@ app.delete(`/people/:id`, (req, res) => {
 
 module.exports.Person = Person;
 module.exports.port = port;
+
+//Sending webpages
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "/webpages/index.html"));
+})
