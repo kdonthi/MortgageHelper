@@ -106,8 +106,8 @@
 
                 let nameDiv = document.createElement("div");
                 nameDiv.id = "name" + number;
-                nameDiv.innerHTML = `Name: ${firstName} ${lastName}`;
-
+                nameDiv.innerHTML = `<b>Name:</b> ${firstName} ${lastName}`;
+                nameDiv.classList.add("personal-info")
 
                 let imgDiv = document.createElement("img");
                 imgDiv.id = "img" + number;
@@ -126,6 +126,7 @@
                 let creditScoreDiv = await getDivWithHtml("credit", number, "Credit");
                 let indicatorDiv = document.createElement("div");
                 indicatorDiv.id = "indicator" + number;
+                let indicatorExplainingDiv = document.createElement("div");
 
 
                 let balance = await getProperty("balance", number);
@@ -133,18 +134,26 @@
                 let creditScore = await getProperty("credit", number);
                 creditScore = parseInt(creditScore);
                 let mortgageScore = (creditScore/850) * 100 + balance/10000;
+
+                divElement.appendChild(balanceDiv);
+                divElement.appendChild(creditScoreDiv);
+                divElement.appendChild(indicatorDiv);
+                divElement.appendChild(indicatorExplainingDiv);
+
                 divElement.addEventListener("onmouseover", () => {
-                    let width = 0;
-                    indicatorDiv.width = width + "%";
                     if (mortgageScore > 75) {
-                        indicatorDiv.color = "green";
+                        indicatorDiv.style.color = "green";
+                        indicatorExplainingDiv.innerHTML = "This person is ready to get a mortgage!"
                     }
                     else if (mortgageScore > 45) {
-                        indicatorDiv.color = "yellow";
+                        indicatorDiv.style.color = "yellow";
+                        indicatorExplainingDiv.innerHTML = "This person is almost ready to get a mortgage."
                     }
                     else {
-                        indicatorDiv.color = "red";
+                        indicatorDiv.style.color = "red";
+                        indicatorExplainingDiv.innerHTML = "This person has a bit of work to do before getting a mortgage."
                     }
+
                     setInterval(() => {
                         if (width > mortgageScore) {
                             clearInterval();
@@ -154,12 +163,7 @@
                             indicatorDiv.width = width + "%";
                         }
                     },10);
-
                 })
-
-                divElement.appendChild(balanceDiv);
-                divElement.appendChild(creditScoreDiv);
-                divElement.appendChild(indicatorDiv);
             }
 
             async function getDivWithHtml(className, number, tag) {
@@ -187,6 +191,17 @@
                 return divElement;
             }
 
+            function addTile(number, tileContainer) {
+                let container = GetPersonalInfoDiv("container", number);
+                let card = GetPersonalInfoDiv("card", number);
+                let frontOfCard = GetPersonalInfoDiv("frontOfCard", number);
+                let backOfCard = GetPersonalInfoDiv("backOfCard", number);
+                tileContainer.appendChild(container);
+                container.appendChild(card);
+                card.appendChild(frontOfCard);
+                card.appendChild(backOfCard);
+            }
+
             function addTiles() {
                 getPeopleCount()
                     .then(people => {return people.json();})
@@ -194,15 +209,7 @@
                         let intCount = parseInt(JSON.stringify(count));
                         let tileContainer = document.getElementById("tileContainer");
                         for (let i = 1; i <= intCount; i++) {
-                            let container = GetPersonalInfoDiv("container", i);
-                            let card = GetPersonalInfoDiv("card", i);
-                            let frontOfCard = GetPersonalInfoDiv("frontOfCard", i);
-                            let backOfCard = GetPersonalInfoDiv("backOfCard", i);
-                            tileContainer.appendChild(container);
-                            container.appendChild(card);
-                            card.appendChild(frontOfCard);
-                            card.appendChild(backOfCard);
-
+                            addTile(i, tileContainer);
                         }
                         console.log("Tiles finished adding.");
                     })
