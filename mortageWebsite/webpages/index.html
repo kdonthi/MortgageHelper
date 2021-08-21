@@ -55,7 +55,7 @@
                 transform: rotateY(180deg);
             }
 
-            .personal-info {
+            .card-info {
                 margin: 15px 5px 15px 5px;
             }
 
@@ -107,7 +107,7 @@
                 let nameDiv = document.createElement("div");
                 nameDiv.id = "name" + number;
                 nameDiv.innerHTML = `<b>Name:</b> ${firstName} ${lastName}`;
-                nameDiv.classList.add("personal-info")
+                nameDiv.classList.add("card-info")
 
                 let imgDiv = document.createElement("img");
                 imgDiv.id = "img" + number;
@@ -124,9 +124,17 @@
             async function addIndicatorInformation(divElement, number) {
                 let balanceDiv = await getDivWithHtml("balance", number, "Balance");
                 let creditScoreDiv = await getDivWithHtml("credit", number, "Credit");
+                let button = document.createElement("button");
+                button.innerHTML = "Click to see how this person qualifies for a mortgage";
+                button.classList.add("card-info");
                 let indicatorDiv = document.createElement("div");
                 indicatorDiv.id = "indicator" + number;
+                indicatorDiv.style.position = "relative";
+                indicatorDiv.height = "10px";
+                indicatorDiv.classList.add("card-info");
                 let indicatorExplainingDiv = document.createElement("div");
+                indicatorExplainingDiv.classList.add("card-info");
+                indicatorExplainingDiv.style.position = "relative";
 
 
                 let balance = await getProperty("balance", number);
@@ -134,35 +142,42 @@
                 let creditScore = await getProperty("credit", number);
                 creditScore = parseInt(creditScore);
                 let mortgageScore = (creditScore/850) * 100 + balance/10000;
+                mortgageScore = Math.round(mortgageScore * 100) / 100;
 
                 divElement.appendChild(balanceDiv);
                 divElement.appendChild(creditScoreDiv);
+                divElement.appendChild(button);
                 divElement.appendChild(indicatorDiv);
                 divElement.appendChild(indicatorExplainingDiv);
 
-                divElement.addEventListener("onmouseover", () => {
+                button.addEventListener("click", () => {
+                    let indicatorExplainDivText;
                     if (mortgageScore > 75) {
-                        indicatorDiv.style.color = "green";
-                        indicatorExplainingDiv.innerHTML = "This person is ready to get a mortgage!"
+                        indicatorDiv.style.backgroundColor = "green";
+                        indicatorExplainDivText = "This person is ready to get a mortgage!"
                     }
                     else if (mortgageScore > 45) {
-                        indicatorDiv.style.color = "yellow";
-                        indicatorExplainingDiv.innerHTML = "This person is almost ready to get a mortgage."
+                        indicatorDiv.style.backgroundColor = "yellow";
+                        indicatorExplainDivText = "This person is almost ready to get a mortgage."
                     }
                     else {
-                        indicatorDiv.style.color = "red";
-                        indicatorExplainingDiv.innerHTML = "This person has a bit of work to do before getting a mortgage."
+                        indicatorDiv.style.backgroundColor = "red";
+                        indicatorExplainDivText = "This person has a bit of work to do before getting a mortgage."
                     }
-
-                    setInterval(() => {
-                        if (width > mortgageScore) {
-                            clearInterval();
+                    let divWidth = 0;
+                    //alert(`Mortgage Score: : ${mortgageScore}`);
+                    let timer = setInterval(() => {
+                        if (divWidth > mortgageScore) {
+                            clearInterval(timer);
+                            divWidth = 0;
                         }
                         else {
-                            width += 1;
-                            indicatorDiv.width = width + "%";
+                            divWidth += 1;
+                            indicatorDiv.style.width = divWidth + "%";
                         }
                     },10);
+                    indicatorDiv.innerHTML = `Mortgage Score: ${mortgageScore} / 100`;
+                    indicatorExplainingDiv.innerHTML = indicatorExplainDivText;
                 })
             }
 
@@ -187,19 +202,22 @@
                     addIndicatorInformation(divElement, number);
                 }
                 divElement.id = className + number.toString();
-                divElement.classList.add(className, "personal-info");
+                divElement.classList.add(className, "card-info");
                 return divElement;
             }
 
             function addTile(number, tileContainer) {
-                let container = GetPersonalInfoDiv("container", number);
-                let card = GetPersonalInfoDiv("card", number);
-                let frontOfCard = GetPersonalInfoDiv("frontOfCard", number);
-                let backOfCard = GetPersonalInfoDiv("backOfCard", number);
-                tileContainer.appendChild(container);
-                container.appendChild(card);
-                card.appendChild(frontOfCard);
-                card.appendChild(backOfCard);
+                return new Promise((resolve, reject) => {
+                    let container = GetPersonalInfoDiv("container", number);
+                    let card = GetPersonalInfoDiv("card", number);
+                    let frontOfCard = GetPersonalInfoDiv("frontOfCard", number);
+                    let backOfCard = GetPersonalInfoDiv("backOfCard", number);
+                    tileContainer.appendChild(container);
+                    container.appendChild(card);
+                    card.appendChild(frontOfCard);
+                    card.appendChild(backOfCard);
+                    resolve(1);
+                });
             }
 
             function addTiles() {
@@ -208,10 +226,12 @@
                     .then(count => {
                         let intCount = parseInt(JSON.stringify(count));
                         let tileContainer = document.getElementById("tileContainer");
+                        let listOfPromises = []
                         for (let i = 1; i <= intCount; i++) {
-                            addTile(i, tileContainer);
+                            addTile(i, tileContainer).then(res => listOfPromises.push(res));
                         }
-                        console.log("Tiles finished adding.");
+                        Promise.all(listOfPromises)
+                            .then(_ => console.log("Tiles finished adding"));
                     })
                     .catch(error => console.log("Error in adding tiles.", error));
             }
