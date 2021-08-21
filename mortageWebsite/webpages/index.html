@@ -98,17 +98,6 @@
                 }
             }
 
-            async function getDivWithHtml(className, number, tag) {
-                let div = GetPersonalInfoDiv(className, number);
-                let property = await getProperty(number, className);
-                if (tag !== "") {
-                    div.innerHTML = tag + ": " + property;
-                }
-                else {
-                    div.innerHTML = property;
-                }
-                return div;
-            }
             async function addPersonalInformation(divElement, number) {
                 let firstName = await getProperty("name_first", number);
                 let lastName = await getProperty("name_last", number);
@@ -130,6 +119,7 @@
                 divElement.appendChild(emailDiv);
                 divElement.appendChild(phoneNumberDiv);
             }
+
 
             async function addIndicatorInformation(divElement, number) {
                 let balanceDiv = await getDivWithHtml("balance", number, "Balance");
@@ -171,17 +161,29 @@
                 divElement.appendChild(creditScoreDiv);
                 divElement.appendChild(indicatorDiv);
             }
+
+            async function getDivWithHtml(className, number, tag) {
+                let div = GetPersonalInfoDiv(className, number);
+                let property = await getProperty(className, number);
+                if (tag !== "") {
+                    div.innerHTML = tag + ": " + property;
+                }
+                else {
+                    div.innerHTML = property;
+                }
+                return div;
+            }
+
             function GetPersonalInfoDiv(className, number) {
                 let divElement = document.createElement("div");
                 if (className === "frontOfCard") {
-                    console.log("In equality")
                     addPersonalInformation(divElement, number);
                 }
                 if (className === "backOfCard") {
                     addIndicatorInformation(divElement, number);
                 }
                 divElement.id = className + number.toString();
-                divElement.classList.add(className, "personal-info"); //can only add one?
+                divElement.classList.add(className, "personal-info");
                 return divElement;
             }
 
