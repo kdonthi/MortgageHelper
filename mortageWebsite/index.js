@@ -145,7 +145,7 @@ function getPersonProperty(personNumber, personProperty, res) {
 
 //Getting information about name
 app.get(`/people/:number/:property`, (req, res) => {
-    console.log("This is called.")
+    //console.log("This is called.")
     let personNumber = parseInt(req.params.number);
     let personProperty = req.params.property;
     getPersonProperty(personNumber, personProperty, res);

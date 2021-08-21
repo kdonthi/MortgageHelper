@@ -4,7 +4,7 @@
         <title>Landis Customer Information</title>
         <style>
             body {
-                background-color: tan;
+                background-color: white;
                 font-family: "SansSerif";
                 height: 100%;
                 width: 100%;
@@ -29,7 +29,7 @@
                 width: 100%;
                 height: 100%;
                 transform-style: preserve-3d;
-                transition: all 0.5s ease;
+                transition: all 0.5s ease-out;
                 perspective: 1000px;
             }
 
@@ -38,7 +38,7 @@
             }
 
             .frontOfCard {
-                background-color: aquamarine;
+                background-color: grey;
                 position: absolute;
                 width: 100%;
                 height: 100%;
@@ -55,6 +55,11 @@
                 transform: rotateY(180deg);
             }
 
+            img {
+                width: 40%;
+                align-content: center;
+            }
+
         </style>
     </head>
     <body>
@@ -66,29 +71,54 @@
         <div id="tileContainer">
 
         </div>
-
         <script type="text/javascript">
+            let baseUrl = "http://localhost:3000"
             async function getPeopleCount() {
-                return await fetch("http://localhost:3000/people/count", {method: "GET"});
+                return await fetch(baseUrl + "/people/count");
             }
 
-            function addPersonalInformation() {
-
+            async function getProperty(number, property) {
+                return await fetch(baseUrl + `/people/${number}/${property}`);
             }
 
-            function addIndicatorInformation() {
+            async function getDivWithHtml(className, number) {
+                let div = getDiv(className, number);
+                let obj = await getProperty(number, className);
+                let jsonObj = await obj.json();
+                div.innerHTML = jsonObj[0][className];
+                return div;
+            }
+            async function addPersonalInformation(divElement, number) {
+                let firstNameDiv = await getDivWithHtml("name_first", number);
+                let lastNameDiv = await getDivWithHtml("name_last", number);
+                let emailDiv = await getDivWithHtml("email", number);
+                let imgDiv = document.createElement("img");
+
+                divElement.appendChild(firstNameDiv);
+                divElement.appendChild(lastNameDiv);
+                divElement.appendChild(emailDiv);
+                imgDiv.id = "img" + number;
+                getProperty(number, "picture")
+                    .then(obj => obj.json())
+                    .then(pictureObj => {
+                    imgDiv.src = pictureObj[0].picture;
+                    divElement.appendChild(imgDiv);
+                });
+            }
+
+            function addIndicatorInformation(divElement, number) {
 
             }
             function getDiv(className, number) {
                 let divElement = document.createElement("div");
                 if (className === "frontOfCard") {
-                    addPersonalInformation(divElement);
+                    console.log("In equality")
+                    addPersonalInformation(divElement, number);
                 }
                 if (className === "backOfCard") {
-                    addIndicatorInformation(divElement);
-
+                    addIndicatorInformation(divElement, number);
                 }
-                divElement.id = className + number;
+                divElement.id = className + number.toString();
                 divElement.classList.add(className); //can only add one?
                 return divElement;
             }
