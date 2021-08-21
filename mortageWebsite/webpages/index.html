@@ -72,8 +72,22 @@
                 return await fetch("http://localhost:3000/people/count", {method: "GET"});
             }
 
+            function addPersonalInformation() {
+
+            }
+
+            function addIndicatorInformation() {
+
+            }
             function getDiv(className, number) {
                 let divElement = document.createElement("div");
+                if (className === "frontOfCard") {
+                    addPersonalInformation(divElement);
+                }
+                if (className === "backOfCard") {
+                    addIndicatorInformation(divElement);
+
+                }
                 divElement.id = className + number;
                 divElement.classList.add(className); //can only add one?
                 return divElement;
