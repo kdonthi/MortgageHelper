@@ -19,8 +19,8 @@
             .container {
                 position: relative;
                 display: inline-block;
-                width: 200px;
-                height: 300px;
+                width: 250px;
+                height: 350px;
                 margin: 30px 15px 10px 30px;
             }
 
@@ -38,7 +38,7 @@
             }
 
             .frontOfCard {
-                background-color: grey;
+                background-color: aquamarine;
                 position: absolute;
                 width: 100%;
                 height: 100%;
@@ -55,9 +55,15 @@
                 transform: rotateY(180deg);
             }
 
+            .personal-info {
+                margin: 15px 5px 15px 5px;
+            }
+
             img {
-                width: 40%;
-                align-content: center;
+                width: 50%;
+                margin: 30px auto 30px auto;
+                display: block;
+                border-radius: 50%;
             }
 
         </style>
@@ -81,35 +87,42 @@
                 return await fetch(baseUrl + `/people/${number}/${property}`);
             }
 
-            async function getDivWithHtml(className, number) {
-                let div = getDiv(className, number);
+            async function getDivWithHtml(className, number, tag) {
+                let div = GetPersonalInfoDiv(className, number);
                 let obj = await getProperty(number, className);
                 let jsonObj = await obj.json();
-                div.innerHTML = jsonObj[0][className];
+                if (tag !== "") {
+                    div.innerHTML = tag + ": " + jsonObj[0][className];
+                }
+                else {
+                    div.innerHTML = jsonObj[0][className];
+                }
                 return div;
             }
             async function addPersonalInformation(divElement, number) {
-                let firstNameDiv = await getDivWithHtml("name_first", number);
-                let lastNameDiv = await getDivWithHtml("name_last", number);
-                let emailDiv = await getDivWithHtml("email", number);
-                let imgDiv = document.createElement("img");
+                let firstNameDiv = await getDivWithHtml("name_first", number, "");
+                let lastNameDiv = await getDivWithHtml("name_last", number, "");
+                firstNameDiv.innerHTML = "Name: " + firstNameDiv.innerHTML + " " + lastNameDiv.innerHTML;
 
-                divElement.appendChild(firstNameDiv);
-                divElement.appendChild(lastNameDiv);
-                divElement.appendChild(emailDiv);
+                let emailDiv = await getDivWithHtml("email", number, "Email");
+                let phoneNumberDiv = await getDivWithHtml("phone", number, "Phone");
+                let imgDiv = document.createElement("img");
+                let imgObj = await getProperty(number, "picture");
+                let jsonImgObj = await imgObj.json();
                 imgDiv.id = "img" + number;
-                getProperty(number, "picture")
-                    .then(obj => obj.json())
-                    .then(pictureObj => {
-                    imgDiv.src = pictureObj[0].picture;
-                    divElement.appendChild(imgDiv);
-                });
+                imgDiv.src = jsonImgObj[0].picture;
+
+
+                divElement.appendChild(imgDiv);
+                divElement.appendChild(firstNameDiv);
+                divElement.appendChild(emailDiv);
+                divElement.appendChild(phoneNumberDiv);
             }
 
             function addIndicatorInformation(divElement, number) {
 
             }
-            function getDiv(className, number) {
+            function GetPersonalInfoDiv(className, number) {
                 let divElement = document.createElement("div");
                 if (className === "frontOfCard") {
                     console.log("In equality")
@@ -119,7 +132,7 @@
                     addIndicatorInformation(divElement, number);
                 }
                 divElement.id = className + number.toString();
-                divElement.classList.add(className); //can only add one?
+                divElement.classList.add(className, "personal-info"); //can only add one?
                 return divElement;
             }
 
@@ -130,10 +143,10 @@
                         let intCount = parseInt(JSON.stringify(count));
                         let tileContainer = document.getElementById("tileContainer");
                         for (let i = 1; i <= intCount; i++) {
-                            let container = getDiv("container", i);
-                            let card = getDiv("card", i);
-                            let frontOfCard = getDiv("frontOfCard", i);
-                            let backOfCard = getDiv("backOfCard", i);
+                            let container = GetPersonalInfoDiv("container", i);
+                            let card = GetPersonalInfoDiv("card", i);
+                            let frontOfCard = GetPersonalInfoDiv("frontOfCard", i);
+                            let backOfCard = GetPersonalInfoDiv("backOfCard", i);
                             tileContainer.appendChild(container);
                             container.appendChild(card);
                             card.appendChild(frontOfCard);
