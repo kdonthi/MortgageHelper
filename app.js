@@ -14,7 +14,8 @@ const Joi = require("joi");
 //Getting path
 const path = require("path");
 //Connecting to db
-mongoose.connect(`mongodb://localhost/Landis`).then(_ => console.log("Connected to database."));
+mongoose.connect("mongodb+srv://kaushikdr:Howareyou1!@cluster0.32gri.mongodb.net/Landis?retryWrites=true&w=majority")
+    .then(_ => console.log("Connected to database."));
 
 //Creating schema
 const personSchema = mongoose.Schema({
