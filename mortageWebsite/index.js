@@ -165,7 +165,8 @@ function validateUpdateSchema(schema) {
         address: Joi.string(),
         comments: Joi.string(),
         created: Joi.date(),
-        tags: Joi.array().items(Joi.string())
+        tags: Joi.array().items(Joi.string()),
+        mortgageStatus: Joi.string()
     });
 
     return updateSchema.validate(schema);
@@ -205,4 +206,8 @@ module.exports.port = port;
 //Sending webpages
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "/webpages/index.html"));
+})
+
+app.get("/statistics", (req, res) => {
+    res.sendFile(path.join(__dirname, "/webpages/statistics.html"));
 })

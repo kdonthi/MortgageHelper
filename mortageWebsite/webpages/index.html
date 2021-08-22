@@ -4,7 +4,7 @@
         <title>Landis Customer Information</title>
         <style>
             body {
-                background-color: white;
+                background-color: cadetblue;
                 font-family: "SansSerif";
                 height: 100%;
                 width: 100%;
@@ -47,7 +47,7 @@
             }
 
             .backOfCard {
-                background-color: white;
+                background-color: tan;
                 position: absolute;
                 width: 100%;
                 height: 100%;
@@ -74,9 +74,12 @@
     </head>
     <body>
         <h1 class="intro"><i>Landis's Valued Customers</i></h1>
-        <p class="intro">Here at Landis, we believe that everyone should have the right to own property and pursue their American Dream.
+        <p class="intro">Here at Landis, we believe that everyone should have the right to own property and pursue their
+            American Dream.
             <br><br>
-            That's why our world-class engineers strive to create tools to help people, no matter their financial status, to achieve it. Here are a few of our happy customers.
+            That's why our world-class engineers strive to create tools to help people, no matter their financial status,
+            to achieve it. Here are a few of our customers we are working with and here are some
+            <a href="/statistics">statistics</a> about them.
         </p>
         <div id="tileContainer">
 
@@ -120,6 +123,14 @@
                 divElement.appendChild(phoneNumberDiv);
             }
 
+            async function updatePerson(divElement, value, number) {
+                await fetch(baseUrl + `/people/${number}`, {
+                    method: "PUT",
+                    body: {
+                        divElement: value
+                    }
+                });
+            }
 
             async function addIndicatorInformation(divElement, number) {
                 let balanceDiv = await getDivWithHtml("balance", number, "Balance");
@@ -155,14 +166,17 @@
                     if (mortgageScore > 75) {
                         indicatorDiv.style.backgroundColor = "green";
                         indicatorExplainDivText = "This person is ready to get a mortgage!"
+                        updatePerson("mortgageStatus", "good", number);
                     }
                     else if (mortgageScore > 45) {
                         indicatorDiv.style.backgroundColor = "yellow";
                         indicatorExplainDivText = "This person is almost ready to get a mortgage."
+                        updatePerson("mortgageStatus", "okay", number);
                     }
                     else {
                         indicatorDiv.style.backgroundColor = "red";
                         indicatorExplainDivText = "This person has a bit of work to do before getting a mortgage."
+                        updatePerson("mortgageStatus", "okay", number);
                     }
                     let divWidth = 0;
                     //alert(`Mortgage Score: : ${mortgageScore}`);
@@ -185,7 +199,7 @@
                 let div = GetPersonalInfoDiv(className, number);
                 let property = await getProperty(className, number);
                 if (tag !== "") {
-                    div.innerHTML = tag + ": " + property;
+                    div.innerHTML = `<b>${tag}</b>: ${property}`;
                 }
                 else {
                     div.innerHTML = property;
