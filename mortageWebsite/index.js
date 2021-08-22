@@ -146,10 +146,20 @@ function calculateMortgageScore(credit, balance) {
     return Math.round(mortgageScore * 100) / 100;
 }
 
-async function findMortgageGroupCount() {
-    let good = 0;
-    let okay = 0;
-    let bad = 0;
+async function getVisualizationData() {
+    let mortgageGroups = {
+        "good": 0,
+        "okay": 0,
+        "bad": 0
+    };
+
+    let creditScoreGroups = {
+        "Poor": 0,
+        "Fair": 0,
+        "Good": 0,
+        "Very Good": 0,
+        "Exceptional": 0
+    }
     let people;
 
     try {
@@ -162,67 +172,28 @@ async function findMortgageGroupCount() {
     }
     for (let i = 0; i < people.length; i++) {
         //console.log(people);
-        let mortgageScore = calculateMortgageScore(parseInt(people[i].credit), people[i].balance);
+        let credit = people[i].credit;
+        let balance = people[i].balance;
+        let mortgageScore = calculateMortgageScore(parseInt(credit), balance);
 
-        if (mortgageScore > 75) good += 1;
-        else if (mortgageScore > 45) okay += 1;
-        else bad += 1;
+        if (mortgageScore > 75) mortgageGroups["good"] += 1;
+        else if (mortgageScore > 45) mortgageGroups["okay"] += 1;
+        else mortgageGroups["bad"] += 1;
+
+        if (credit <= 579) creditScoreGroups["Poor"] += 1;
+        else if (credit >= 580 && credit <= 669) creditScoreGroups["Fair"] += 1;
+        else if (credit >= 670 && credit <= 739) creditScoreGroups["Good"] += 1;
+        else if (credit >= 740 && credit <= 799) creditScoreGroups["Very Good"] += 1;
+        else creditScoreGroups["Exceptional"] += 1;
+
     }
-    let resArray = {
-        "good": good,
-        "okay": okay,
-        "bad": bad
-    };
-    console.log(resArray);
-    return resArray;
+    return [mortgageGroups, creditScoreGroups];
 }
 
-app.get("/mortgageStatus/count", (req, res) => {
-    findMortgageGroupCount().then(result => res.send(result));
+app.get("/visualizationData", (req, res) => {
+    getVisualizationData().then(result => res.send(result));
 })
 
-async function findTopTenTagCount() {
-    let tagsAndCount = {};
-    let people;
-
-    try {
-        people = await Person
-            .find({})
-            .select("tags");
-    }
-    catch (error) {
-        return error;
-    }
-    let peopleCount = people.length;
-    for (let i = 0; i < peopleCount; i++) {
-        let tagLength = people[i].tags.length;
-        for (let j = 0; j < tagLength; j++) {
-            let tag = people[i].tags[j];
-            if (tag in tagsAndCount) {
-                tagsAndCount.tag += 1;
-            }
-            else {
-                tagsAndCount[tag] = 1;
-            }
-        }
-    }
-
-    let sortTagsArray = []
-    let totalTagsLength = tagsAndCount.length;
-    for (const tag in tagsAndCount) {
-        sortTagsArray.push([tag, tagsAndCount[tag]])
-    }
-    sortTagsArray.sort((elem1, elem2) => {
-
-        return elem2[1] - elem1[1];
-    })
-    console.log(sortTagsArray)
-    console.log(sortTagsArray.slice(0, 10));
-}
-
-app.get("/topTenTags/count", (req, res) => {
-    findTopTenTagCount().then(result => res.send(result));
-})
 async function getPersonInfo(number, property) {
     try {
         return await Person

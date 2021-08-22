@@ -4,32 +4,45 @@
         <title>Statistics about Landis Customers</title>
     </head>
     <body>
-        <div id="barChart" style="width:50%; margin:0 auto";>
-
-        </div>
+        <div id="barChart" style="width:50%; margin:0 auto";></div>
+        <div id="pieChart" style="width:50%; margin:0 auto";></div>
         <script src="https://code.jscharting.com/2.9.0/jscharting.js"></script>
         <script src="index.js"></script>
         <script>
             let baseUrl = "http://localhost:3000";
 
             async function getMortgageStatusCounts() {
-                return await fetch(baseUrl + "/mortgageStatus/count");
+                return await fetch(baseUrl + "/visualizationData");
             }
 
             getMortgageStatusCounts()
                 .then(res => res.json())
-                .then(mortgageScores =>
+                .then(visualizationData => {
+                    [mortgageGroups, creditGroups] = visualizationData;
                     JSC.Chart("barChart", {
                         type: "vertical column",
                         series: [{
                             points: [
-                                {x: "Mortgage Ready", y: mortgageScores.good},
-                                {x: "Needs a bit of work", y: mortgageScores.okay},
-                                {x: "Needs a lot more work", y: mortgageScores.bad}
+                                {x: "Mortgage Ready", y: mortgageGroups.good},
+                                {x: "Needs a bit of work", y: mortgageGroups.okay},
+                                {x: "Needs a lot more work", y: mortgageGroups.bad}
                             ]
                         }]
-                    })
-                );
+                    });
+
+                    JSC.Chart("pieChart", {
+                        type: "pie",
+                        series: [{
+                            points: [
+                                {name: "Poor (300-579)", y: creditGroups["Poor"]},
+                                {name: "Fair (580-669)", y: creditGroups["Fair"]},
+                                {name: "Good (670-739)", y: creditGroups["Good"]}
+                                {name: "Very Good (740-799)", y: creditGroups["Very Good"]},
+                                {name: "Exceptional (800-850)", y: creditGroups["Exceptional"]},
+                            ]
+                        }]
+                    });
+                });
         </script>
 
     </body>
