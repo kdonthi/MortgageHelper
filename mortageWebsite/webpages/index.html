@@ -56,6 +56,7 @@
             }
 
             .card-info {
+                position: relative;
                 margin: 15px 5px 15px 5px;
             }
 
@@ -123,13 +124,37 @@
                 divElement.appendChild(phoneNumberDiv);
             }
 
-            async function updatePerson(divElement, value, number) {
-                await fetch(baseUrl + `/people/${number}`, {
+            async function updateMortgageStatus(divElement, value, number) {
+                let body = {
+                    "mortgageStatus": value
+                };
+                let id = await getProperty("_id", number);
+                await fetch(baseUrl + `/people/${id}`, {
                     method: "PUT",
-                    body: {
-                        divElement: value
-                    }
+                    body: body
                 });
+            }
+
+            async function calculateMortgageScore(number) {
+                let balance = await getProperty("balance", number);
+                balance = parseFloat(balance);
+                let creditScore = await getProperty("credit", number);
+                creditScore = parseInt(creditScore);
+                let mortgageScore = Math.min((creditScore / 850) * 100 + balance / 10000, 100);
+                return Math.round(mortgageScore * 100) / 100;
+            }
+
+            function barAnimation(mortgageScore, indicatorDiv) {
+                let divWidth = 0;
+                let timer = setInterval(() => {
+                    if (divWidth > mortgageScore) {
+                        clearInterval(timer);
+                        divWidth = 0;
+                    } else {
+                        divWidth += 1;
+                        indicatorDiv.style.width = divWidth + "%";
+                    }
+                }, 10);
             }
 
             async function addIndicatorInformation(divElement, number) {
@@ -148,28 +173,23 @@
                 indicatorExplainingDiv.classList.add("card-info");
 
 
-                let balance = await getProperty("balance", number);
-                balance = parseFloat(balance);
-                let creditScore = await getProperty("credit", number);
-                creditScore = parseInt(creditScore);
-                let mortgageScore = Math.min((creditScore/850) * 100 + balance/10000, 100);
-                mortgageScore = Math.round(mortgageScore * 100) / 100;
+                let mortgageScore = await calculateMortgageScore(number);
 
                 let indicatorExplainDiv;
                 if (mortgageScore > 75) {
                     indicatorDiv.style.backgroundColor = "green";
                     indicatorExplainDiv = "This person is ready to get a mortgage!"
-                    await updatePerson("mortgageStatus", "good", number);
+                    await updateMortgageStatus("mortgageStatus", "good", number);
                 }
                 else if (mortgageScore > 45) {
                     indicatorDiv.style.backgroundColor = "yellow";
                     indicatorExplainDiv = "This person is almost ready to get a mortgage."
-                    await updatePerson("mortgageStatus", "okay", number);
+                    await updateMortgageStatus("mortgageStatus", "okay", number);
                 }
                 else {
                     indicatorDiv.style.backgroundColor = "red";
                     indicatorExplainDiv = "This person has a bit of work to do before getting a mortgage."
-                    await updatePerson("mortgageStatus", "okay", number);
+                    await updateMortgageStatus("mortgageStatus", "okay", number);
                 }
 
                 divElement.appendChild(balanceDiv);
@@ -179,17 +199,7 @@
                 divElement.appendChild(indicatorExplainingDiv);
 
                 button.addEventListener("click", () => {
-                    let divWidth = 0;
-                    let timer = setInterval(() => {
-                        if (divWidth > mortgageScore) {
-                            clearInterval(timer);
-                            divWidth = 0;
-                        }
-                        else {
-                            divWidth += 1;
-                            indicatorDiv.style.width = divWidth + "%";
-                        }
-                    },10);
+                    barAnimation(mortgageScore, indicatorDiv);
                     indicatorDiv.innerHTML = `Mortgage Score: ${mortgageScore} / 100`;
                     indicatorExplainingDiv.innerHTML = indicatorExplainDiv;
                 })
@@ -212,11 +222,14 @@
                 if (className === "frontOfCard") {
                     addPersonalInformation(divElement, number);
                 }
-                if (className === "backOfCard") {
+                else if (className === "backOfCard") {
                     addIndicatorInformation(divElement, number);
                 }
+                else {
+                    divElement.classList.add("card-info");
+                }
                 divElement.id = className + number.toString();
-                divElement.classList.add(className, "card-info");
+                divElement.classList.add(className);
                 return divElement;
             }
 

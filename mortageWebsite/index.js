@@ -67,7 +67,7 @@ function validateSchema(schema) {
         address: Joi.string().required(),
         comments: Joi.string().required(),
         created: Joi.date().required(),
-        tags: Joi.array().items(Joi.string()).required()
+        tags: Joi.array().items(Joi.string()).required(),
     });
 
     return personSchemaValidation.validate(schema);
@@ -100,8 +100,8 @@ app.get(`/people`, (_, res) => {
         });
 });
 
-function getPeopleCount(res) {
-    Person.countDocuments({}, (error, documentCount) => {
+function getPeopleCount(res, filter) {
+    Person.countDocuments(filter, (error, documentCount) => {
         if (error) {
             res.status(404).send(error);
         }
@@ -111,7 +111,8 @@ function getPeopleCount(res) {
     })
 }
 app.get("/people/count", (req, res) => {
-    getPeopleCount(res);
+    let filter = req.body.filter ? req.body.filter : {};
+    getPeopleCount(res, filter);
 })
 
 async function getPersonInfo(number, property) {
@@ -166,7 +167,6 @@ function validateUpdateSchema(schema) {
         comments: Joi.string(),
         created: Joi.date(),
         tags: Joi.array().items(Joi.string()),
-        mortgageStatus: Joi.string()
     });
 
     return updateSchema.validate(schema);
@@ -174,19 +174,18 @@ function validateUpdateSchema(schema) {
 
 //Update
 app.put(`/people/:id`, (req, res) => {
+    let id = req.params.id;
     let updateRequest = req.body;
+    console.log(updateRequest);
     let { error } = validateUpdateSchema(updateRequest);
     if (error) {
-        res.send(error);
+        res.status(400).send(error);
     }
     else {
-        let id = req.params.id;
-        console.log(args);
         Person
-            .findByIdAndUpdate(id, {
-                $set: updateRequest
-            }, {new: true})
-            .then(updatedPerson => res.send(updatedPerson));
+            .findByIdAndUpdate(id, {$set: updateRequest}, {new: true})
+            .then(updatedPerson => res.send(updatedPerson))
+            .catch(err => res.status(404).send(err));
     }
 });
 
