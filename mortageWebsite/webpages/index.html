@@ -141,19 +141,36 @@
                 let indicatorDiv = document.createElement("div");
                 indicatorDiv.id = "indicator" + number;
                 indicatorDiv.style.position = "relative";
-                indicatorDiv.height = "10px";
                 indicatorDiv.classList.add("card-info");
                 let indicatorExplainingDiv = document.createElement("div");
-                indicatorExplainingDiv.classList.add("card-info");
+                indicatorExplainingDiv.id = "indicatorExplanation" + number;
                 indicatorExplainingDiv.style.position = "relative";
+                indicatorExplainingDiv.classList.add("card-info");
 
 
                 let balance = await getProperty("balance", number);
                 balance = parseFloat(balance);
                 let creditScore = await getProperty("credit", number);
                 creditScore = parseInt(creditScore);
-                let mortgageScore = (creditScore/850) * 100 + balance/10000;
+                let mortgageScore = Math.min((creditScore/850) * 100 + balance/10000, 100);
                 mortgageScore = Math.round(mortgageScore * 100) / 100;
+
+                let indicatorExplainDiv;
+                if (mortgageScore > 75) {
+                    indicatorDiv.style.backgroundColor = "green";
+                    indicatorExplainDiv = "This person is ready to get a mortgage!"
+                    await updatePerson("mortgageStatus", "good", number);
+                }
+                else if (mortgageScore > 45) {
+                    indicatorDiv.style.backgroundColor = "yellow";
+                    indicatorExplainDiv = "This person is almost ready to get a mortgage."
+                    await updatePerson("mortgageStatus", "okay", number);
+                }
+                else {
+                    indicatorDiv.style.backgroundColor = "red";
+                    indicatorExplainDiv = "This person has a bit of work to do before getting a mortgage."
+                    await updatePerson("mortgageStatus", "okay", number);
+                }
 
                 divElement.appendChild(balanceDiv);
                 divElement.appendChild(creditScoreDiv);
@@ -162,24 +179,7 @@
                 divElement.appendChild(indicatorExplainingDiv);
 
                 button.addEventListener("click", () => {
-                    let indicatorExplainDivText;
-                    if (mortgageScore > 75) {
-                        indicatorDiv.style.backgroundColor = "green";
-                        indicatorExplainDivText = "This person is ready to get a mortgage!"
-                        updatePerson("mortgageStatus", "good", number);
-                    }
-                    else if (mortgageScore > 45) {
-                        indicatorDiv.style.backgroundColor = "yellow";
-                        indicatorExplainDivText = "This person is almost ready to get a mortgage."
-                        updatePerson("mortgageStatus", "okay", number);
-                    }
-                    else {
-                        indicatorDiv.style.backgroundColor = "red";
-                        indicatorExplainDivText = "This person has a bit of work to do before getting a mortgage."
-                        updatePerson("mortgageStatus", "okay", number);
-                    }
                     let divWidth = 0;
-                    //alert(`Mortgage Score: : ${mortgageScore}`);
                     let timer = setInterval(() => {
                         if (divWidth > mortgageScore) {
                             clearInterval(timer);
@@ -191,7 +191,7 @@
                         }
                     },10);
                     indicatorDiv.innerHTML = `Mortgage Score: ${mortgageScore} / 100`;
-                    indicatorExplainingDiv.innerHTML = indicatorExplainDivText;
+                    indicatorExplainingDiv.innerHTML = indicatorExplainDiv;
                 })
             }
 
