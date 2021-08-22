@@ -100,6 +100,11 @@ app.get(`/people`, (_, res) => {
         });
 });
 
+app.get("/people/count", (req, res) => {
+    let filter = req.body.filter ? req.body.filter : {};
+    getPeopleCount(res, filter);
+})
+
 function getPeopleCount(res, filter) {
     Person.countDocuments(filter, (error, documentCount) => {
         if (error) {
@@ -110,23 +115,14 @@ function getPeopleCount(res, filter) {
         }
     })
 }
-app.get("/people/count", (req, res) => {
-    let filter = req.body.filter ? req.body.filter : {};
-    getPeopleCount(res, filter);
-})
 
-async function getPersonInfo(number, property) {
-    try {
-        return await Person
-            .find({})
-            .skip(number - 1)
-            .limit(1)
-            .select(`${property}`);
-    }
-    catch (error) {
-        return error;
-    }
-}
+app.get(`/people/:number/:property`, (req, res) => {
+    //console.log("This is called.")
+    let personNumber = parseInt(req.params.number);
+    let personProperty = req.params.property;
+    getPersonProperty(personNumber, personProperty, res);
+});
+
 function getPersonProperty(personNumber, personProperty, res) {
     Person.countDocuments({}, (error, documentCount) => {
         if (error) {
@@ -144,12 +140,76 @@ function getPersonProperty(personNumber, personProperty, res) {
     })
 }
 
-//Getting information about name
-app.get(`/people/:number/:property`, (req, res) => {
-    //console.log("This is called.")
-    let personNumber = parseInt(req.params.number);
-    let personProperty = req.params.property;
-    getPersonProperty(personNumber, personProperty, res);
+function calculateMortgageScore(credit, balance) {
+    let mortgageScore = Math.min((credit / 850) * 100 + balance / 1000, 100);
+    console.log(credit, balance, mortgageScore);
+    return Math.round(mortgageScore * 100) / 100;
+}
+
+async function findMortgageGroupCount() {
+    let good = 0;
+    let okay = 0;
+    let bad = 0;
+    let people;
+
+    try {
+        people = await Person
+            .find({})
+            .select("credit balance");
+    }
+    catch (error) {
+        return error;
+    }
+    for (let i = 0; i < people.length; i++) {
+        //console.log(people);
+        let mortgageScore = calculateMortgageScore(parseInt(people[i].credit), people[i].balance);
+
+        if (mortgageScore > 75) good += 1;
+        else if (mortgageScore > 45) okay += 1;
+        else bad += 1;
+    }
+    let resArray = {
+        "good": good,
+        "okay": okay,
+        "bad": bad
+    };
+    console.log(resArray);
+    return resArray;
+}
+
+app.get("/mortgageStatus/count", (req, res) => {
+    console.log("Here in count");
+    findMortgageGroupCount().then(result => res.send(result));
+})
+async function getPersonInfo(number, property) {
+    try {
+        return await Person
+            .find({})
+            .skip(number - 1)
+            .limit(1)
+            .select(`${property}`);
+    }
+    catch (error) {
+        return error;
+    }
+}
+
+
+//Update
+app.put(`/people/:id`, (req, res) => {
+    let id = req.params.id;
+    let updateRequest = req.body;
+    console.log(updateRequest);
+    let { error } = validateUpdateSchema(updateRequest);
+    if (error) {
+        res.status(400).send(error);
+    }
+    else {
+        Person
+            .findByIdAndUpdate(id, {$set: updateRequest}, {new: true})
+            .then(updatedPerson => res.send(updatedPerson))
+            .catch(err => res.status(404).send(err));
+    }
 });
 
 function validateUpdateSchema(schema) {
@@ -172,32 +232,16 @@ function validateUpdateSchema(schema) {
     return updateSchema.validate(schema);
 }
 
-//Update
-app.put(`/people/:id`, (req, res) => {
-    let id = req.params.id;
-    let updateRequest = req.body;
-    console.log(updateRequest);
-    let { error } = validateUpdateSchema(updateRequest);
-    if (error) {
-        res.status(400).send(error);
-    }
-    else {
-        Person
-            .findByIdAndUpdate(id, {$set: updateRequest}, {new: true})
-            .then(updatedPerson => res.send(updatedPerson))
-            .catch(err => res.status(404).send(err));
-    }
-});
-
-async function deletePerson(id) {
-    return await Person.findByIdAndDelete(id);
-}
 app.delete(`/people/:id`, (req, res) => {
     let id = req.params.id;
     deletePerson(id)
         .then(deletedPerson => res.send(deletedPerson))
         .catch(err => res.status(400).send(err));
 })
+
+async function deletePerson(id) {
+    return await Person.findByIdAndDelete(id);
+}
 
 module.exports.Person = Person;
 module.exports.port = port;

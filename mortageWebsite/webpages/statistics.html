@@ -9,20 +9,28 @@
         </div>
         <script src="https://code.jscharting.com/2.9.0/jscharting.js"></script>
         <script src="index.js"></script>
-            function getCountForCondition() {
+        <script>
 
+            let baseUrl = "http://localhost:3000";
+
+            async function getMortgageStatusCounts() {
+                return await fetch(baseUrl + "/mortgageStatus/count");
             }
-            let baseUrl = "http://localhost:3000"
 
-            JSC.Chart("barChart",{
-                type: "vertical column",
-                series: [{
-                    points: [
-                        {x: "apples", y: 10},
-                        {x: "bananas", y: 20}
-                    ]
-                }]
-            })
+            getMortgageStatusCounts()
+                .then(res => res.json())
+                .then(mortgageScores =>
+                    JSC.Chart("barChart", {
+                        type: "vertical column",
+                        series: [{
+                            points: [
+                                {x: "Mortgage Ready", y: mortgageScores.good},
+                                {x: "Needs a bit of work", y: mortgageScores.okay},
+                                {x: "Needs a lot more work", y: mortgageScores.bad}
+                            ]
+                        }]
+                    })
+                );
         </script>
 
     </body>
