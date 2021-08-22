@@ -178,8 +178,50 @@ async function findMortgageGroupCount() {
 }
 
 app.get("/mortgageStatus/count", (req, res) => {
-    console.log("Here in count");
     findMortgageGroupCount().then(result => res.send(result));
+})
+
+async function findTopTenTagCount() {
+    let tagsAndCount = {};
+    let people;
+
+    try {
+        people = await Person
+            .find({})
+            .select("tags");
+    }
+    catch (error) {
+        return error;
+    }
+    let peopleCount = people.length;
+    for (let i = 0; i < peopleCount; i++) {
+        let tagLength = people[i].tags.length;
+        for (let j = 0; j < tagLength; j++) {
+            let tag = people[i].tags[j];
+            if (tag in tagsAndCount) {
+                tagsAndCount.tag += 1;
+            }
+            else {
+                tagsAndCount[tag] = 1;
+            }
+        }
+    }
+
+    let sortTagsArray = []
+    let totalTagsLength = tagsAndCount.length;
+    for (const tag in tagsAndCount) {
+        sortTagsArray.push([tag, tagsAndCount[tag]])
+    }
+    sortTagsArray.sort((elem1, elem2) => {
+
+        return elem2[1] - elem1[1];
+    })
+    console.log(sortTagsArray)
+    console.log(sortTagsArray.slice(0, 10));
+}
+
+app.get("/topTenTags/count", (req, res) => {
+    findTopTenTagCount().then(result => res.send(result));
 })
 async function getPersonInfo(number, property) {
     try {
