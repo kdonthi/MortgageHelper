@@ -112,6 +112,7 @@ app.get("/people/count", (req, res) => {
 function getPeopleCount(res, filter) {
     Person.countDocuments(filter, (error, documentCount) => {
         if (error) {
+            winston.info(error);
             res.status(404).send(error);
         }
         else {
