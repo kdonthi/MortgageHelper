@@ -49,7 +49,8 @@
                                 {x: "Needs a bit of work", y: mortgageGroups.okay},
                                 {x: "Needs a lot more work", y: mortgageGroups.bad}
                             ]
-                        }]
+                        }],
+                        defaultPointTooltip: "%yValue people"
                     });
 
                     JSC.Chart("pieChart", {
@@ -64,7 +65,8 @@
                                 {name: "Very Good (740-799)", y: creditGroups["Very Good"]},
                                 {name: "Exceptional (800-850)", y: creditGroups["Exceptional"]},
                             ]
-                        }]
+                        }],
+                        defaultPointTooltip: "<b>%xValue</b>: %yValue people"
                     });
                 });
         </script>
