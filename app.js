@@ -225,34 +225,33 @@ async function getPersonInfo(number, property) {
     }
 }
 
-async function updatePerson(id, updateRequest) {
-    return await Person.findByIdAndUpdate(id, {$set: updateRequest}, {new: true});
+async function updatePerson(id, updateRequest, res) {
+    try {
+        let objectId = mongoose.Types.ObjectId(id);
+        let person = await Person.find({_id: objectId});
+        for (const element in updateRequest) {
+            person[element] = updateRequest[element];
+        }
+        await person.save();
+        res.send(person);
+    }
+    catch (error) {
+        res.status(404).send(error);
+    }
 }
 
 //Update
 app.put(`/people/:id`, (req, res) => {
     let id = req.params.id;
     let updateRequest = req.body;
-    logger.info(id);
-    logger.info(updateRequest);
     let { error } = validateUpdateSchema(updateRequest);
     if (error) {
-        logger.info("1");
         res.status(400).send(error);
     }
     else {
-        logger.info("2");
-        updatePerson(id, updateRequest)
-            .then(result => {
-                logger.info("34");
-                logger.info(result);
-                logger.info("5");
-                res.send(result);
-            })
-            .catch(err => {
-                logger.info(err);
-                res.status(404).send(err);
-            });
+        updatePerson(id, updateRequest, res)
+            .then(r => logger.info("Updated person"))
+            .catch(e => logger.info("Logging failed"));
     }
 });
 
