@@ -14,7 +14,7 @@ const Joi = require("joi");
 //Getting path
 const path = require("path");
 //Connecting to db
-let db = "mongodb+srv://kaushikdr:Howareyou1!@cluster0.32gri.mongodb.net/myFirstDatabase?retryWrites=true&w=majority&authSource=admin"
+let db = "mongodb+srv://kaushikdr:Howareyou1!@cluster0.32gri.mongodb.net/Landis?retryWrites=true&w=majority"
 mongoose.connect(db)
     .then(_ => console.log("Connected to database."));
 
@@ -108,7 +108,8 @@ app.get(`/people`, (_, res) => {
             console.log(people);
             let output = people.map(person => JSON.stringify(person)).join("\n");
             res.send(output);
-        });
+        })
+        .catch(err => winston.info(err));
 });
 
 app.get("/people/count", (req, res) => {
@@ -223,7 +224,7 @@ async function getPersonInfo(number, property) {
 app.put(`/people/:id`, (req, res) => {
     let id = req.params.id;
     let updateRequest = req.body;
-    console.log(updateRequest);
+    console.log("Update Request:", updateRequest);
     let { error } = validateUpdateSchema(updateRequest);
     if (error) {
         res.status(400).send(error);

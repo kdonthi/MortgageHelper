@@ -86,7 +86,8 @@
 
         </div>
         <script type="text/javascript">
-            let baseUrl = "http://ec2-54-211-55-247.compute-1.amazonaws.com"
+            let baseUrl = "http://localhost:3000";
+            //let baseUrl = "https://whispering-fjord-45538.herokuapp.com/"
             async function getPeopleCount() {
                 return await fetch(baseUrl + "/people/count");
             }
@@ -122,17 +123,6 @@
                 divElement.appendChild(nameDiv);
                 divElement.appendChild(emailDiv);
                 divElement.appendChild(phoneNumberDiv);
-            }
-
-            async function updateMortgageStatus(divElement, value, number) {
-                let body = {
-                    "mortgageStatus": value
-                };
-                let id = await getProperty("_id", number);
-                await fetch(baseUrl + `/people/${id}`, {
-                    method: "PUT",
-                    body: body
-                });
             }
 
             async function calculateMortgageScore(number) {
@@ -179,17 +169,14 @@
                 if (mortgageScore > 75) {
                     indicatorDiv.style.backgroundColor = "green";
                     indicatorExplainDiv = "This person is ready to get a mortgage!"
-                    await updateMortgageStatus("mortgageStatus", "good", number);
                 }
                 else if (mortgageScore > 45) {
                     indicatorDiv.style.backgroundColor = "yellow";
                     indicatorExplainDiv = "This person is almost ready to get a mortgage."
-                    await updateMortgageStatus("mortgageStatus", "okay", number);
                 }
                 else {
                     indicatorDiv.style.backgroundColor = "red";
                     indicatorExplainDiv = "This person has a bit of work to do before getting a mortgage."
-                    await updateMortgageStatus("mortgageStatus", "okay", number);
                 }
 
                 divElement.appendChild(balanceDiv);
