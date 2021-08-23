@@ -22,6 +22,12 @@ mongoose.connect(db)
     .then(_ => console.log("Connected to database."));
 
 const winston = require("winston");
+const logConfiguration = {
+    'transports': [
+        new winston.transports.Console()
+    ]
+};
+const logger = winston.createLogger(logConfiguration);
 //Creating schema
 const personSchema = mongoose.Schema({
     id: String,
@@ -229,9 +235,11 @@ app.put(`/people/:id`, (req, res) => {
     let updateRequest = req.body;
     let { error } = validateUpdateSchema(updateRequest);
     if (error) {
+        logger.info("1");
         res.status(400).send(error);
     }
     else {
+        logger.info("2");
         updatePerson(id, updateRequest)
             .then(result => res.send(result))
             .catch(err => res.status(404).send(err));
