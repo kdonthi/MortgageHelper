@@ -226,7 +226,7 @@ async function getPersonInfo(number, property) {
 }
 
 async function updatePerson(id, updateRequest, res) {
-    Person.findByIdAndUpdate(id, updateRequest, (err, result) => {
+    Person.findByIdAndUpdate(id, updateRequest, {new: true}, (err, result) => {
         if (err) {
             res.status(404).send(err);
         }
