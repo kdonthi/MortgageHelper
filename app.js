@@ -14,7 +14,7 @@ const Joi = require("joi");
 //Getting path
 const path = require("path");
 //Connecting to db
-let db = "mongodb+srv://kaushikdr:Howareyou1!@cluster0.32gri.mongodb.net/Landis?retryWrites=true&w=majority"
+let db = process.env.db || "mongodb+srv://kaushikdr:Howareyou1!@cluster0.32gri.mongodb.net/Landis?retryWrites=true&w=majority"
 mongoose.connect(db)
     .then(_ => console.log("Connected to database."));
 
