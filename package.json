@@ -4,7 +4,12 @@
   "description": "Shows details about our customers and how close they are to get a mortgage.",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "dev": "react-scripts start",
+    "start": "serve -s build",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "heroku-postbuild": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -19,7 +24,8 @@
   "dependencies": {
     "express": "^4.17.1",
     "joi": "^17.4.2",
-    "mongoose": "^5.13.7"
+    "mongoose": "^5.13.7",
+    "serve": "^12.0.0"
   },
   "devDependencies": {
     "jest": "^27.0.6",
