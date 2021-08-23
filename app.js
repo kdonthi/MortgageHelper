@@ -241,8 +241,14 @@ app.put(`/people/:id`, (req, res) => {
     else {
         logger.info("2");
         updatePerson(id, updateRequest)
-            .then(result => res.send(result))
-            .catch(err => res.status(404).send(err));
+            .then(result => {
+                res.send(result);
+                logger.info("3");
+            })
+            .catch(err => {
+                res.status(404).send(err);
+                logger.info("4");
+            });
     }
 });
 
