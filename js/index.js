@@ -161,3 +161,5 @@ function addTiles() {
         })
         .catch(error => console.log("Error in adding tiles.", error));
 }
+
+addTiles();

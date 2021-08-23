@@ -15,7 +15,6 @@
             p {
                 font-size: 20px;
             }
-
             .container {
                 position: relative;
                 display: inline-block;
@@ -70,7 +69,6 @@
             .progress-bar {
                 width: 0%;
             }
-
         </style>
     </head>
     <body>
@@ -85,8 +83,10 @@
         <div id="tileContainer">
 
         </div>
-        <script type="text/javascript">
-            let baseUrl = "http://localhost:3000";
+
+        <script>
+            //let baseUrl = "http://localhost:3000";
+            let baseUrl = "https://mortgage-helper.herokuapp.com"
 
             async function getPeopleCount() {
                 return await fetch(baseUrl + "/people/count");
