@@ -224,15 +224,16 @@ async function getPersonInfo(number, property) {
 app.put(`/people/:id`, (req, res) => {
     let id = req.params.id;
     let updateRequest = req.body;
-    console.log("Update Request:", updateRequest);
     let { error } = validateUpdateSchema(updateRequest);
     if (error) {
         res.status(400).send(error);
     }
     else {
         Person
-            .findByIdAndUpdate(id, {$set: updateRequest}, {new: true})
-            .then(updatedPerson => res.send(updatedPerson))
+            .findByIdAndUpdate(id, updateRequest, {new: true})
+            .then(updatedPerson => {
+                res.send(updatedPerson);
+            })
             .catch(err => res.status(404).send(err));
     }
 });
