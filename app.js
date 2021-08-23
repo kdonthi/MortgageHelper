@@ -229,11 +229,9 @@ app.put(`/people/:id`, (req, res) => {
     let updateRequest = req.body;
     let { error } = validateUpdateSchema(updateRequest);
     if (error) {
-        res.send(1);
         res.status(400).send(error);
     }
     else {
-        res.send(2);
         updatePerson(id, updateRequest)
             .then(result => res.send(result))
             .catch(err => res.status(404).send(err));
