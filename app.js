@@ -227,8 +227,8 @@ async function getPersonInfo(number, property) {
 
 async function updatePerson(id, updateRequest, res) {
     try {
-        //let objectId = mongoose.Types.ObjectId(id);
-        let person = await Person.find({_id: id});
+        let objectId = mongoose.Types.ObjectId(id);
+        let person = await Person.find({_id: objectId});
         for (const element in updateRequest) {
             person[element] = updateRequest[element];
         }
