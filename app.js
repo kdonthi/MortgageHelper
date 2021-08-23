@@ -230,7 +230,7 @@ app.put(`/people/:id`, (req, res) => {
     }
     else {
         Person
-            .findByIdAndUpdate(id, updateRequest, {new: true})
+            .findByIdAndUpdate(id, {$set: updateRequest}, {new: true})
             .then(updatedPerson => {
                 res.send(updatedPerson);
             })
