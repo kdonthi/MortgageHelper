@@ -39,6 +39,7 @@
                 .then(visualizationData => {
                     [mortgageGroups, creditGroups] = visualizationData;
                     JSC.Chart("barChart", {
+                        legend_visible: false,
                         type: "vertical column",
                         title_position: "center",
                         title_label_text: "<b>Customers in Mortgage Groups</b>",

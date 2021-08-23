@@ -233,6 +233,8 @@ async function updatePerson(id, updateRequest) {
 app.put(`/people/:id`, (req, res) => {
     let id = req.params.id;
     let updateRequest = req.body;
+    logger.info(id);
+    logger.info(updateRequest);
     let { error } = validateUpdateSchema(updateRequest);
     if (error) {
         logger.info("1");
