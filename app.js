@@ -17,8 +17,6 @@ const path = require("path");
 
 //Connecting to db
 let db = "mongodb+srv://kaushikdr:1234@cluster0.32gri.mongodb.net/Landis?retryWrites=true&w=majority";
-
-//let db = "mongodb://localhost/Landis";
 mongoose.connect(db)
     .then(_ => console.log("Connected to database."));
 
@@ -66,6 +64,21 @@ personSchema.index({
 //Creating model
 const Person = mongoose.model("Person", personSchema, 'HousingInformation');
 
+//Create
+app.post(`/people`, (req, res) => {
+    console.log("In the post method.");
+    let result = validateSchema(req.body);
+    if (result.error) {
+        res.send(result.error);
+    }
+    else {
+        let newPerson = new Person(req.body);
+        newPerson.save()
+            .then(_ => res.send(newPerson))
+            .catch(err => res.status(400).send("Duplicate person sent"));
+    }
+});
+
 function validateSchema(schema) {
     const personSchemaValidation = Joi.object({
         id: Joi.string().required(),
@@ -85,25 +98,8 @@ function validateSchema(schema) {
 
     return personSchemaValidation.validate(schema);
 }
-//Create
-app.post(`/people`, (req, res) => {
-    console.log("In the post method.");
-    let result = validateSchema(req.body);
-    if (result.error) {
-        res.send(result.error);
-    }
-    else {
-        let newPerson = new Person(req.body);
-        newPerson.save()
-            .then(_ => res.send(newPerson))
-            .catch(err => res.status(400).send("Duplicate person sent"));
-    }
-});
 
 //Read
-async function getPeople() {
-    return await Person.find({});
-}
 app.get(`/people`, (_, res) => {
     getPeople()
         .then(people => {
@@ -119,6 +115,10 @@ app.get("/people/count", (req, res) => {
     getPeopleCount(res, filter);
 })
 
+async function getPeople() {
+    return await Person.find({});
+}
+
 function getPeopleCount(res, filter) {
     Person.countDocuments(filter, (error, documentCount) => {
         if (error) {
@@ -132,7 +132,6 @@ function getPeopleCount(res, filter) {
 }
 
 app.get(`/people/:number/:property`, (req, res) => {
-    //console.log("This is called.")
     let personNumber = parseInt(req.params.number);
     let personProperty = req.params.property;
     getPersonProperty(personNumber, personProperty, res);
@@ -159,11 +158,22 @@ function getPersonProperty(personNumber, personProperty, res) {
     })
 }
 
-function calculateMortgageScore(credit, balance) {
-    let mortgageScore = Math.min((credit / 850) * 100 + balance / 1000, 100);
-    console.log(credit, balance, mortgageScore);
-    return Math.round(mortgageScore * 100) / 100;
+async function getPersonInfo(number, property) {
+    try {
+        return await Person
+            .find({})
+            .skip(number - 1)
+            .limit(1)
+            .select(`${property}`);
+    }
+    catch (error) {
+        return error;
+    }
 }
+
+app.get("/visualizationData", (req, res) => {
+    getVisualizationData().then(result => res.send(result));
+})
 
 async function getVisualizationData() {
     let mortgageGroups = {
@@ -189,8 +199,8 @@ async function getVisualizationData() {
     catch (error) {
         return error;
     }
+
     for (let i = 0; i < people.length; i++) {
-        //console.log(people);
         let credit = people[i].credit;
         let balance = people[i].balance;
         let mortgageScore = calculateMortgageScore(parseInt(credit), balance);
@@ -209,32 +219,9 @@ async function getVisualizationData() {
     return [mortgageGroups, creditScoreGroups];
 }
 
-app.get("/visualizationData", (req, res) => {
-    getVisualizationData().then(result => res.send(result));
-})
-
-async function getPersonInfo(number, property) {
-    try {
-        return await Person
-            .find({})
-            .skip(number - 1)
-            .limit(1)
-            .select(`${property}`);
-    }
-    catch (error) {
-        return error;
-    }
-}
-
-async function updatePerson(id, updateRequest, res) {
-    Person.findByIdAndUpdate(id, updateRequest, {new: true}, (err, result) => {
-        if (err) {
-            res.status(404).send(err);
-        }
-        else {
-            res.send(result);
-        }
-    })
+function calculateMortgageScore(credit, balance) {
+    let mortgageScore = Math.min((credit / 850) * 100 + balance / 1000, 100);
+    return Math.round(mortgageScore * 100) / 100;
 }
 
 //Update
@@ -268,6 +255,17 @@ function validateUpdateSchema(schema) {
     });
 
     return updateSchema.validate(schema);
+}
+
+async function updatePerson(id, updateRequest, res) {
+    Person.findByIdAndUpdate(id, updateRequest, {new: true}, (err, result) => {
+        if (err) {
+            res.status(404).send(err);
+        }
+        else {
+            res.send(result);
+        }
+    })
 }
 
 app.delete(`/people/:id`, (req, res) => {
