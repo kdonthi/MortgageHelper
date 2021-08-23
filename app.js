@@ -242,12 +242,14 @@ app.put(`/people/:id`, (req, res) => {
         logger.info("2");
         updatePerson(id, updateRequest)
             .then(result => {
+                logger.info("34");
+                logger.info(result);
+                logger.info("5");
                 res.send(result);
-                logger.info("3");
             })
             .catch(err => {
+                logger.info(err);
                 res.status(404).send(err);
-                logger.info("4");
             });
     }
 });
