@@ -17,6 +17,7 @@ const path = require("path");
 mongoose.connect("mongodb+srv://kaushikdr:Howareyou1!@cluster0.32gri.mongodb.net/Landis?retryWrites=true&w=majority")
     .then(_ => console.log("Connected to database."));
 
+const winston = require("winston");
 //Creating schema
 const personSchema = mongoose.Schema({
     id: String,
@@ -262,7 +263,12 @@ module.exports.port = port;
 
 //Sending webpages
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "/webpages/index.html"));
+    try {
+        res.sendFile(path.join(__dirname, "/webpages/index.html"));
+    }
+    catch (err) {
+        winston.info(err);
+    }
 })
 
 app.get("/statistics", (req, res) => {
