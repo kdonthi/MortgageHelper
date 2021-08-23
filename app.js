@@ -11,10 +11,13 @@ const mongoose = require("mongoose");
 //Getting Joi
 const Joi = require("joi");
 
+
 //Getting path
 const path = require("path");
 //Connecting to db
-let db = process.env.db || "mongodb+srv://kaushikdr:Howareyou1!@cluster0.32gri.mongodb.net/Landis?retryWrites=true&w=majority"
+//let db = "mongodb+srv://kaushikdr:1234@cluster0.32gri.mongodb.net/Landis?retryWrites=true&w=majority";
+
+let db = "mongodb://localhost/Landis";
 mongoose.connect(db)
     .then(_ => console.log("Connected to database."));
 

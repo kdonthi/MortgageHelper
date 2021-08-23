@@ -27,9 +27,8 @@
         <script src="https://code.jscharting.com/2.9.0/jscharting.js"></script>
         <script src="index.js"></script>
         <script>
-
-            //let baseUrl = "http://localhost:3000";
-            let baseUrl = "https://whispering-fjord-45538.herokuapp.com"
+            //let baseUrl = `http://localhost:3000`;
+            let baseUrl = "https://mortgage-helper.herokuapp.com"
 
             async function getMortgageStatusCounts() {
                 return await fetch(baseUrl + "/visualizationData");
