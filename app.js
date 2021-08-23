@@ -219,6 +219,9 @@ async function getPersonInfo(number, property) {
     }
 }
 
+async function updatePerson(id, updateRequest, res) {
+    return await Person.findByIdAndUpdate(id, {$set: updateRequest}, {new: true});
+}
 
 //Update
 app.put(`/people/:id`, (req, res) => {
@@ -229,11 +232,8 @@ app.put(`/people/:id`, (req, res) => {
         res.status(400).send(error);
     }
     else {
-        Person
-            .findByIdAndUpdate(id, {$set: updateRequest}, {new: true})
-            .then(updatedPerson => {
-                res.send(updatedPerson);
-            })
+        updatePerson(id, updateRequest, res)
+            .then(result => res.send(result))
             .catch(err => res.status(404).send(err));
     }
 });
