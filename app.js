@@ -226,18 +226,14 @@ async function getPersonInfo(number, property) {
 }
 
 async function updatePerson(id, updateRequest, res) {
-    try {
-        let objectId = mongoose.Types.ObjectId(id);
-        let person = await Person.find({_id: objectId});
-        for (const element in updateRequest) {
-            person[element] = updateRequest[element];
+    Person.findByIdAndUpdate(id, updateRequest, (err, result) => {
+        if (err) {
+            res.status(404).send(err);
         }
-        await person.save();
-        res.send(person);
-    }
-    catch (error) {
-        res.status(404).send(error);
-    }
+        else {
+            res.send(result);
+        }
+    })
 }
 
 //Update
@@ -249,9 +245,7 @@ app.put(`/people/:id`, (req, res) => {
         res.status(400).send(error);
     }
     else {
-        updatePerson(id, updateRequest, res)
-            .then(r => logger.info("Updated person"))
-            .catch(e => logger.info("Logging failed"));
+        updatePerson(id, updateRequest, res);
     }
 });
 
