@@ -4,7 +4,6 @@
   "description": "Shows details about our customers and how close they are to get a mortgage.",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js"
   },
   "repository": {
