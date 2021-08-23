@@ -132,6 +132,10 @@ app.get(`/people/:number/:property`, (req, res) => {
 });
 
 function getPersonProperty(personNumber, personProperty, res) {
+    if (personNumber <= 0) {
+        res.status(400).send("The person number was less than or equal to 0.");
+        return;
+    }
     Person.countDocuments({}, (error, documentCount) => {
         if (error) {
             res.status(404).send(error);

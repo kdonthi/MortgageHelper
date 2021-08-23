@@ -85,7 +85,6 @@
         </div>
 
         <script>
-            //let baseUrl = "http://localhost:3000";
             let baseUrl = "https://mortgage-helper.herokuapp.com"
 
             async function getPeopleCount() {
@@ -117,7 +116,6 @@
                 let imgDiv = document.createElement("img");
                 imgDiv.id = "img" + number;
                 imgDiv.src = await getProperty("picture", number);
-
 
                 divElement.appendChild(imgDiv);
                 divElement.appendChild(nameDiv);
