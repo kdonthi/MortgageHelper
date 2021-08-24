@@ -267,7 +267,7 @@ async function updatePerson(id, updateRequest, res) {
             res.send(result);
         }
         else {
-            res.status(400).send(new Error("A person with that ID was not found."));
+            res.status(400).send("A person with that ID was not found.");
         }
     })
 }
@@ -286,7 +286,7 @@ async function deletePerson(id, res) {
             res.send(result);
         }
         else {
-            res.status(400).send(new Error("A person with that ID was not found."));
+            res.status(400).send("A person with that ID was not found.");
         }
     });
 }
