@@ -110,14 +110,15 @@ app.get(`/people`, (_, res) => {
         .catch(err => winston.info(err));
 });
 
+async function getPeople() {
+    return await Person.find({});
+}
+
 app.get("/people/count", (req, res) => {
     let filter = req.body.filter ? req.body.filter : {};
     getPeopleCount(res, filter);
 })
 
-async function getPeople() {
-    return await Person.find({});
-}
 
 function getPeopleCount(res, filter) {
     Person.countDocuments(filter, (error, documentCount) => {
