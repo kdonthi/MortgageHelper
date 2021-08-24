@@ -50,10 +50,17 @@
                 position: absolute;
                 width: 100%;
                 height: 100%;
-                backface-visibility: hidden;
                 transform: rotateY(180deg);
             }
 
+            .frontOfCard .backOfCard {
+                color: white;
+                -webkit-perspective: 0;
+                -webkit-backface-visibility: hidden;
+                -webkit-transform: translate3d(0,0,0);
+                visibility:visible;
+                backface-visibility: hidden;
+            }
             .card-info {
                 position: relative;
                 margin: 15px 5px 15px 5px;
