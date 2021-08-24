@@ -5,6 +5,9 @@ This is a website I built using Node.js, MongoDB, Javascript, CSS, and HTML. Aft
 
 There is also a link to charts on the statistics hyperlink on the front page.
 
+## Optimal Experience
+**The user experience is best on `Chrome` (the backface-visbility property I used is not supported on `Safari`) and on a computer.** 
+
 ## Structure of application
 ```
 Mortgage Helper
