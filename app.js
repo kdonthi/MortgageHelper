@@ -263,21 +263,32 @@ async function updatePerson(id, updateRequest, res) {
         if (err) {
             res.status(404).send(err);
         }
-        else {
+        else if (result) {
             res.send(result);
+        }
+        else {
+            res.status(400).send(new Error("A person with that ID was not found."));
         }
     })
 }
 
 app.delete(`/people/:id`, (req, res) => {
     let id = req.params.id;
-    deletePerson(id)
-        .then(deletedPerson => res.send(deletedPerson))
-        .catch(err => res.status(400).send(err));
+    deletePerson(id, res);
 })
 
-async function deletePerson(id) {
-    return await Person.findByIdAndDelete(id);
+async function deletePerson(id, res) {
+    Person.findByIdAndDelete(id, {}, (err, result) => {
+        if (err) {
+            res.status(404).send(err);
+        }
+        else if (result) {
+            res.send(result);
+        }
+        else {
+            res.status(400).send(new Error("A person with that ID was not found."));
+        }
+    });
 }
 
 module.exports.Person = Person;
